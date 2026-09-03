@@ -1,0 +1,57 @@
+[project]
+name = "expenseflow-backend"
+version = "1.0.0"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = ["*/migrations/*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "DJ", "S", "BLE"]
+ignore = ["S101", "S105", "S106", "S311", "S608", "DJ001", "DJ008", "DJ012", "E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["S", "B"]
+"tests/**" = ["S", "B"]
+"config/settings_test.py" = ["F403", "F405"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings_test"
+python_files = ["test_*.py"]
+addopts = "-q --reuse-db"
+markers = ["security: security-focused tests"]
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.coverage.run]
+source = ["apps"]
+branch = true
+omit = ["*/migrations/*", "*/tests/*", "*/management/*"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+skip_covered = true
+
+[tool.importlinter]
+root_package = "apps"
+
+[[tool.importlinter.contracts]]
+name = "Each module is layered: api -> services -> selectors -> models"
+type = "layers"
+containers = ["apps.users", "apps.expenses", "apps.reporting", "apps.accounts"]
+layers = ["api", "(services)", "(selectors)", "(models)"]
+exhaustive = false
+
+[[tool.importlinter.contracts]]
+name = "core is shared and depends on no business module"
+type = "forbidden"
+source_modules = ["apps.core"]
+forbidden_modules = ["apps.users", "apps.accounts", "apps.expenses", "apps.reporting"]
+
+[[tool.importlinter.contracts]]
+name = "Business modules never import another module's API layer"
+type = "forbidden"
+source_modules = ["apps.expenses", "apps.reporting"]
+forbidden_modules = ["apps.accounts.api", "apps.reporting.api"]
