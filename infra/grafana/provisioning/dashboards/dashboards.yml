@@ -1,0 +1,7 @@
+apiVersion: 1
+providers:
+  - name: ExpenseFlow
+    folder: ExpenseFlow
+    type: file
+    options:
+      path: /var/lib/grafana/dashboards

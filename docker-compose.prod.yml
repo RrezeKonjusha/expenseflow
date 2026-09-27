@@ -1,0 +1,23 @@
+# Staging and production on the VPS. Images come from GHCR, nothing is built on the server.
+services:
+  web:
+    build: !reset null
+    restart: unless-stopped
+  api:
+    build: !reset null
+    restart: unless-stopped
+    environment:
+      SECURE_HSTS_SECONDS: "31536000"
+  worker:
+    build: !reset null
+    restart: unless-stopped
+  postgres:
+    restart: unless-stopped
+  mongo:
+    restart: unless-stopped
+  redis:
+    restart: unless-stopped
+  prometheus:
+    restart: unless-stopped
+  grafana:
+    restart: unless-stopped

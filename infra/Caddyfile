@@ -1,0 +1,42 @@
+# Caddy = API gateway: TLS, SPA hosting, reverse proxy with load balancing, security headers.
+# localhost gets a locally trusted certificate (tls internal); a real domain gets Let's Encrypt.
+{$SITE_DOMAIN:localhost} {
+	encode zstd gzip
+
+	@backend path /api/* /admin/* /static/* /health/
+	handle @backend {
+		reverse_proxy {
+			# every replica of `api` (docker compose --scale api=2) is discovered through Docker DNS
+			dynamic a api 8000 {
+				refresh 5s
+			}
+			lb_policy round_robin
+			health_uri /health/
+			health_interval 15s
+			header_up X-Forwarded-Proto {scheme}
+		}
+	}
+
+	handle /grafana/* {
+		reverse_proxy grafana:3000
+	}
+
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "same-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		-Server
+	}
+
+	# Swagger UI and Django admin use inline scripts, so they get no CSP; everything else is locked down.
+	@csp not path /api/docs* /admin/* /grafana/*
+	header @csp Content-Security-Policy "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+}

@@ -1,0 +1,17 @@
+# Ephemeral test environment inside GitHub Actions.
+services:
+  api:
+    environment:
+      EMAIL_URL: smtp://mailpit:1025
+      THROTTLE_AUTH: 1000/min
+      AXES_ENABLED: "0"
+  worker:
+    environment:
+      EMAIL_URL: smtp://mailpit:1025
+  mailpit:
+    image: axllent/mailpit:v1.20
+    ports: ["8025:8025"]
+  prometheus:
+    profiles: [monitoring]
+  grafana:
+    profiles: [monitoring]

@@ -1,0 +1,98 @@
+# Base stack shared by every environment. Combine with an override:
+#   dev:  docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+#   ci:   docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build
+#   prod: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+name: expenseflow
+
+x-backend: &backend
+  build: ./backend
+  image: ${REGISTRY:-expenseflow}/api:${IMAGE_TAG:-local}
+  env_file: .env
+  depends_on:
+    postgres: { condition: service_healthy }
+    mongo: { condition: service_healthy }
+    redis: { condition: service_healthy }
+
+services:
+  web:
+    build: ./frontend
+    image: ${REGISTRY:-expenseflow}/web:${IMAGE_TAG:-local}
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN:-localhost}
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./infra/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [api]
+
+  api:
+    <<: *backend
+    environment:
+      RUN_MIGRATIONS: "1"
+      CELERY_TASK_ALWAYS_EAGER: "0"
+
+  worker:
+    <<: *backend
+    command: ["celery", "-A", "config", "worker", "-l", "info", "--concurrency", "2"]
+    environment:
+      CELERY_TASK_ALWAYS_EAGER: "0"
+    healthcheck:
+      disable: true
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-expenseflow}
+      POSTGRES_USER: ${POSTGRES_USER:-expenseflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-expenseflow}
+    volumes: [pg_data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-expenseflow}"]
+      interval: 5s
+      retries: 10
+
+  mongo:
+    image: mongo:7
+    volumes: [mongo_data:/data/db]
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: [redis_data:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prom_data:/prometheus
+    depends_on: [api]
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s/grafana/"
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+    volumes:
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./infra/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    depends_on: [prometheus]
+
+volumes:
+  pg_data:
+  mongo_data:
+  redis_data:
+  prom_data:
+  grafana_data:
+  caddy_data:
+  caddy_config:

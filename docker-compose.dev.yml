@@ -1,0 +1,23 @@
+# Local development: exposes databases, adds Mailpit to catch emails (http://localhost:8025).
+services:
+  api:
+    environment:
+      DJANGO_DEBUG: "1"
+      EMAIL_URL: smtp://mailpit:1025
+    ports: ["8000:8000"]
+    volumes: ["./backend:/app"]
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+  worker:
+    environment:
+      EMAIL_URL: smtp://mailpit:1025
+  postgres:
+    ports: ["5432:5432"]
+  mongo:
+    ports: ["27017:27017"]
+  redis:
+    ports: ["6379:6379"]
+  mailpit:
+    image: axllent/mailpit:v1.20
+    ports: ["8025:8025", "1025:1025"]
+  grafana:
+    ports: ["3000:3000"]
