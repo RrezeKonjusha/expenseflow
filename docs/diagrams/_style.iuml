@@ -1,0 +1,17 @@
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontSize 12
+skinparam roundCorner 10
+skinparam ArrowColor #555555
+skinparam BorderColor #555555
+skinparam BackgroundColor white
+skinparam componentStyle rectangle
+skinparam class {
+  BackgroundColor #FAFBFF
+  BorderColor #3b5b92
+  HeaderBackgroundColor #E8EEF9
+}
+skinparam state {
+  BackgroundColor #FAFBFF
+  BorderColor #3b5b92
+}

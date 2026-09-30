@@ -1,0 +1,36 @@
+@startuml sequence-approve
+!include _style.iuml
+title Sequence - manager approves an expense
+
+actor Manager
+participant "React SPA" as SPA
+participant "ExpenseViewSet\n(presentation)" as V
+participant "expenses.services\n(business)" as S
+participant "Expense model\n(domain)" as M
+database PostgreSQL as PG
+participant "core.audit" as A
+queue "Redis / Celery" as Q
+database MongoDB as MG
+
+Manager -> SPA : click Approve
+SPA -> V : POST /api/v1/expenses/42/approve/
+V -> PG : get_object() scoped by role (404 if not visible)
+V -> S : approve_expense(expense, user)
+S -> S : can_decide(user, expense)? else 403
+S -> M : approve(by=user)
+M -> M : status must be SUBMITTED, approver != owner\nelse InvalidTransition (409)
+S -> PG : UPDATE expenses_expense SET status='APPROVED'
+PG -> PG : trg_expense_budget: UPDATE users_project SET spent = spent + amount
+alt spent > budget
+  PG --> S : CHECK project_spent_within_budget violated
+  S --> V : BudgetExceeded
+  V --> SPA : 409 {type: budget_exceeded}
+else ok
+  S -> A : record EXPENSE_APPROVED
+  A -> Q : write_audit.delay(payload)
+  Q -> MG : insert audit_logs
+  S -> S : bump dashboard cache version
+  V --> SPA : 200 expense + _links
+  SPA --> Manager : toast "Approved"
+end
+@enduml

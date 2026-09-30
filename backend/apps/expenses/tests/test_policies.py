@@ -5,7 +5,7 @@ from decimal import Decimal as D
 
 from apps.expenses import policies as p
 
-TODAY = date(2026, 10, 1)
+TODAY = date(2026, 9, 30)
 
 
 def test_common_ok():

@@ -1,0 +1,131 @@
+@startuml class
+!include _style.iuml
+title ExpenseFlow - UML class diagram (domain)
+
+abstract class BaseModel <<abstract entity>> {
+  created_at : DateTime
+  updated_at : DateTime
+}
+enum Role {
+  USER
+  MANAGER
+  ADMIN
+}
+enum ExpenseStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+  REIMBURSED
+}
+class User {
+  email : str
+  first_name : str
+  last_name : str
+  role : Role
+  is_active : bool
+  +full_name() : str
+  +is_admin() : bool
+  +is_manager() : bool
+}
+class Department {
+  name : str
+}
+class Project {
+  code : str
+  name : str
+  budget : Decimal
+  spent : Decimal
+  is_active : bool
+}
+class ProjectMember <<association>> {
+  joined_at : DateTime
+}
+abstract class Expense <<polymorphic>> {
+  type : str
+  amount : Decimal
+  currency : str
+  expense_date : Date
+  description : str
+  status : ExpenseStatus
+  rejection_reason : str
+  +{abstract} type_violations() : dict
+  +reimbursable_amount() : Decimal
+  +policy_violations(is_member) : dict
+  +submit(is_member)
+  +approve(by : User)
+  +reject(by : User, reason : str)
+  +reopen()
+}
+class TravelExpense {
+  distance_km : Decimal
+  destination : str
+  +type_violations() : dict
+}
+class MealExpense {
+  attendees : int
+  +type_violations() : dict
+  +reimbursable_amount() : Decimal
+}
+class EquipmentExpense {
+  item_name : str
+  serial_no : str
+  +type_violations() : dict
+}
+
+BaseModel <|-- Department
+BaseModel <|-- Project
+BaseModel <|-- Expense
+Expense <|-- TravelExpense
+Expense <|-- MealExpense
+Expense <|-- EquipmentExpense
+
+Department "1" o-- "0..*" User : members
+Department "0..1" --> "0..1" User : manager
+User "1" -- "0..*" ProjectMember
+Project "1" -- "0..*" ProjectMember
+User "0..*" -- "0..*" Project : N:N via ProjectMember
+User "1" --> "0..*" Expense : employee
+Project "1" --> "0..*" Expense
+User "0..1" --> "0..*" Expense : decided_by
+User ..> Role
+Expense ..> ExpenseStatus
+
+package "MongoDB documents" {
+  class AuditLog <<Document>> {
+    ts : DateTime
+    action : str
+    ip : str
+    request_id : str
+  }
+  class Actor <<EmbeddedDocument>> {
+    user_id : int
+    email : str
+    role : str
+  }
+  class Change <<EmbeddedDocument>> {
+    field : str
+    old : any
+    new : any
+  }
+  class ReportSnapshot <<Document>> {
+    name : str
+    scope : str
+    generated_at : DateTime
+  }
+  class Criteria <<EmbeddedDocument>> {
+    date_from, date_to : Date
+    group_by : str
+    statuses, types : list
+  }
+  class Row <<EmbeddedDocument>> {
+    key, label : str
+    count : int
+    total : Decimal
+  }
+  AuditLog *-- "0..1" Actor
+  AuditLog *-- "0..*" Change
+  ReportSnapshot *-- "1" Criteria
+  ReportSnapshot *-- "0..*" Row
+}
+@enduml

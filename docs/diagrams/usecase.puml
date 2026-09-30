@@ -1,0 +1,38 @@
+@startuml usecase
+!include _style.iuml
+left to right direction
+title ExpenseFlow - Use cases
+
+actor Employee as E
+actor Manager as M
+actor Admin as A
+E <|-- M
+M <|-- A
+
+rectangle ExpenseFlow {
+  usecase "Register and activate" as UC1
+  usecase "Log in / out" as UC2
+  usecase "Create, edit, delete draft" as UC3
+  usecase "Submit expense" as UC4
+  usecase "Import expenses (CSV/JSON)" as UC5
+  usecase "Search and filter expenses" as UC6
+  usecase "View dashboard" as UC7
+  usecase "Build, save, export report" as UC8
+  usecase "Approve / reject" as UC9
+  usecase "Manage users, departments, projects" as UC10
+  usecase "Reimburse approved expenses" as UC11
+  usecase "View audit log" as UC12
+}
+E --> UC1
+E --> UC2
+E --> UC3
+E --> UC4
+E --> UC5
+E --> UC6
+E --> UC7
+E --> UC8
+M --> UC9
+A --> UC10
+A --> UC11
+A --> UC12
+@enduml

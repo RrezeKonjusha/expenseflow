@@ -1,0 +1,101 @@
+@startuml erd
+!include _style.iuml
+hide circle
+skinparam linetype ortho
+title ExpenseFlow - ERD (PostgreSQL)
+
+entity users_department {
+  * id : bigint <<PK>>
+  --
+  * name : varchar(100) <<UNIQUE>>
+  manager_id : bigint <<FK users_user, ON DELETE SET NULL>>
+  created_at : timestamptz DEFAULT now()
+  updated_at : timestamptz DEFAULT now()
+}
+entity users_user {
+  * id : bigint <<PK>>
+  --
+  * email : varchar(254) <<UNIQUE>>
+  * password : varchar(128)
+  first_name, last_name : varchar(150)
+  * role : varchar(10) DEFAULT 'USER'\n  CHECK role IN (USER, MANAGER, ADMIN)
+  department_id : bigint <<FK, ON DELETE SET NULL>>
+  is_active : bool DEFAULT false
+  is_staff, is_superuser : bool
+  last_login, date_joined : timestamptz
+}
+entity users_project {
+  * id : bigint <<PK>>
+  --
+  * code : varchar(20) <<UNIQUE>>
+  * name : varchar(150)
+  * budget : numeric(12,2) CHECK >= 0
+  * spent : numeric(12,2) DEFAULT 0\n  CHECK spent >= 0 AND spent <= budget
+  is_active : bool DEFAULT true
+  created_at, updated_at : timestamptz
+}
+entity users_project_member {
+  * id : bigint <<PK>>
+  --
+  * project_id : bigint <<FK, ON DELETE CASCADE>>
+  * user_id : bigint <<FK, ON DELETE CASCADE>>
+  joined_at : timestamptz DEFAULT now()
+  UNIQUE (project_id, user_id)
+}
+entity expenses_expense {
+  * id : bigint <<PK>>
+  --
+  polymorphic_ctype_id : int <<FK django_content_type>>
+  * type : varchar(10) CHECK IN (TRAVEL, MEAL, EQUIPMENT)
+  * employee_id : bigint <<FK users_user, ON DELETE RESTRICT>>
+  * project_id : bigint <<FK users_project, ON DELETE RESTRICT>>
+  * amount : numeric(10,2) CHECK > 0
+  currency : varchar(3) DEFAULT 'EUR'
+  * expense_date : date
+  * description : varchar(500)
+  * status : varchar(12) DEFAULT 'DRAFT'\n  CHECK IN (DRAFT, SUBMITTED, APPROVED, REJECTED, REIMBURSED)
+  submitted_at, decided_at, reimbursed_at : timestamptz
+  decided_by_id : bigint <<FK users_user, ON DELETE SET NULL>>
+  rejection_reason : text DEFAULT ''
+  created_at, updated_at : timestamptz
+  ..
+  CHECK status <> REJECTED OR rejection_reason <> ''
+  CHECK status NOT IN (decided) OR decided_at IS NOT NULL
+  INDEX (status), (employee_id, expense_date DESC),
+  (project_id, status), GIN to_tsvector(description)
+}
+entity expenses_travelexpense {
+  * expense_ptr_id : bigint <<PK, FK ON DELETE CASCADE>>
+  --
+  * distance_km : numeric(8,1) CHECK > 0
+  * destination : varchar(150)
+}
+entity expenses_mealexpense {
+  * expense_ptr_id : bigint <<PK, FK ON DELETE CASCADE>>
+  --
+  * attendees : smallint CHECK >= 1
+}
+entity expenses_equipmentexpense {
+  * expense_ptr_id : bigint <<PK, FK ON DELETE CASCADE>>
+  --
+  * item_name : varchar(150)
+  * serial_no : varchar(100)
+}
+
+users_department ||--o{ users_user : "has members"
+users_user |o--o| users_department : "manages"
+users_project ||--o{ users_project_member
+users_user ||--o{ users_project_member
+users_user ||--o{ expenses_expense : "claims"
+users_project ||--o{ expenses_expense : "charged to"
+users_user |o--o{ expenses_expense : "decides"
+expenses_expense ||--o| expenses_travelexpense
+expenses_expense ||--o| expenses_mealexpense
+expenses_expense ||--o| expenses_equipmentexpense
+
+note bottom of expenses_expense
+  Triggers: trg_expense_budget (AFTER UPDATE OF status),
+  trg_touch_updated_at (BEFORE UPDATE).
+  Procedure: sp_mark_reimbursed(p_until date) RETURNS integer.
+end note
+@enduml

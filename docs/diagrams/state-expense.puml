@@ -1,0 +1,16 @@
+@startuml state-expense
+!include _style.iuml
+title Expense - State diagram
+
+[*] --> DRAFT : create (owner, policy valid)
+DRAFT --> DRAFT : edit (owner)
+DRAFT --> [*] : delete (owner)
+DRAFT --> SUBMITTED : submit (owner)\n[no policy violations]
+SUBMITTED --> APPROVED : approve (dept manager / admin)\n[not own expense, budget not exceeded]
+SUBMITTED --> REJECTED : reject (dept manager / admin)\n[reason required]
+REJECTED --> DRAFT : reopen (owner)
+APPROVED --> REIMBURSED : reimburse (admin)\nsp_mark_reimbursed(until)
+REIMBURSED --> [*]
+
+APPROVED : entry / trg_expense_budget adds amount to project.spent
+@enduml

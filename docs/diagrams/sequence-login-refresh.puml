@@ -1,0 +1,33 @@
+@startuml sequence-login-refresh
+!include _style.iuml
+title Sequence - login, silent refresh and logout
+
+actor User
+participant "React SPA\n(Redux + Axios)" as SPA
+participant "Caddy" as GW
+participant "accounts API" as API
+database PostgreSQL as PG
+database "MongoDB" as MG
+
+User -> SPA : email + password
+SPA -> GW : POST /api/v1/auth/login/
+GW -> API
+API -> PG : authenticate (django-axes counts failures)
+API -> MG : audit LOGIN
+API --> SPA : 200 {access, user}\nSet-Cookie: ef_refresh (httpOnly, SameSite=Strict)
+SPA -> SPA : store access token in memory
+
+== 15 minutes later ==
+SPA -> API : GET /api/v1/expenses/ (Bearer expired)
+API --> SPA : 401
+SPA -> API : POST /api/v1/auth/refresh/ (cookie)
+API -> PG : blacklist old refresh token (rotation)
+API --> SPA : 200 {access} + new cookie
+SPA -> API : retry GET /api/v1/expenses/
+API --> SPA : 200 page of expenses
+
+== logout ==
+SPA -> API : POST /api/v1/auth/logout/ (cookie)
+API -> PG : blacklist refresh token
+API --> SPA : 204, cookie cleared
+@enduml

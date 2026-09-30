@@ -1,0 +1,46 @@
+@startuml component
+!include _style.iuml
+title ExpenseFlow - Component diagram
+
+actor "Employee / Manager / Admin" as U
+node "Browser" {
+  [React SPA\n(Redux, Router, Axios, MUI)] as SPA
+}
+node "Caddy (API gateway)" as GW
+node "Django API (stateless, N replicas)" {
+  package "accounts\n(Authentication)" as ACC
+  package "users\n(User management)" as USR
+  package "expenses\n(Business operations)" as EXP
+  package "reporting\n(Statistics & reporting)" as REP
+  package "core\n(audit, permissions, email, health)" as CORE
+}
+node "Celery worker" as W
+database "PostgreSQL\n(users, projects, expenses,\ntriggers, procedure)" as PG
+database "MongoDB\n(audit_logs, report_snapshots)" as MG
+database "Redis\n(cache, throttles, broker)" as RD
+cloud "SMTP\n(Mailpit / Brevo)" as SMTP
+node "Prometheus + Grafana" as MON
+
+U --> SPA
+SPA --> GW : HTTPS /api/v1 (JWT)
+GW --> ACC
+GW --> USR
+GW --> EXP
+GW --> REP
+ACC ..> USR : services
+EXP ..> USR : selectors
+REP ..> EXP : selectors
+ACC ..> CORE
+USR ..> CORE
+EXP ..> CORE
+REP ..> CORE
+USR --> PG
+EXP --> PG
+REP --> PG
+REP --> MG
+CORE --> RD : enqueue jobs / cache
+RD --> W
+W --> MG : audit writes
+W --> SMTP : emails
+MON ..> GW : scrapes /metrics
+@enduml
