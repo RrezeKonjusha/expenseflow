@@ -31,6 +31,6 @@ If the bad release contained a migration, restore the database backup taken befo
 | Task | How |
 | --- | --- |
 | Create an admin | `docker compose exec api python manage.py createsuperuser` |
-| Reset demo data (staging only) | `docker compose exec api python manage.py seed_demo --reset` |
+| Reset demo data (local or CI stack only, never production) | `docker compose exec api python manage.py seed_demo --reset` |
 | Rotate secrets | change `.env`, `docker compose up -d`; rotating `JWT_SIGNING_KEY` signs everyone out |
 | Update dependencies | monthly PR: bump `requirements.txt` / `package.json`, CI must pass |
