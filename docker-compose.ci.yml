@@ -4,6 +4,7 @@ services:
     environment:
       EMAIL_URL: smtp://mailpit:1025
       THROTTLE_AUTH: 1000/min
+      THROTTLE_ANON: 1000/min  # refresh calls are anonymous; e2e and browser tests make many
       AXES_ENABLED: "0"
   worker:
     environment:

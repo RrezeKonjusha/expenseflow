@@ -76,6 +76,11 @@ jobs:
         env:
           CYPRESS_BASE_URL: https://localhost
           CYPRESS_MAILPIT_URL: http://localhost:8025
+      - name: Session survives rapid reloads (real Chrome, no proxy)
+        working-directory: tests/browser
+        run: |
+          npm i --no-save --no-package-lock puppeteer-core@24
+          CHROME_PATH=$(which google-chrome) BASE_URL=https://localhost node refresh-race.mjs
       - if: always()
         uses: actions/upload-artifact@v4
         with:
