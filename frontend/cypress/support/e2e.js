@@ -11,7 +11,7 @@ Cypress.Commands.add('login', (email, password = PASSWORD) => {
   cy.visit('/');
 });
 
-// Latest email for an address from Mailpit (dev/staging SMTP catcher)
+// Latest email for an address from Mailpit (SMTP catcher in the dev and CI stacks)
 Cypress.Commands.add('lastEmailTo', (address) =>
   cy
     .request(`${Cypress.env('mailpitUrl')}/api/v1/search?query=to:${encodeURIComponent(address)}`)
