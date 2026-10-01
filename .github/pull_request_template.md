@@ -1,8 +1,8 @@
 ## What changed
 <!-- One or two sentences. -->
 
-## Jira
-EXP-
+## Issues
+Closes #
 
 ## How to test
 1.
@@ -13,3 +13,5 @@ EXP-
 - [ ] API change? OpenAPI schema and Postman collection updated
 - [ ] UI change? Screenshot attached
 - [ ] Docs updated (module README, user manual) if behaviour changed
+
+<!-- Solo project: after opening, add a self-review comment (diff read, tests, docs, CI). -->
