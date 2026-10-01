@@ -13,6 +13,7 @@
 | Maintenance and versioning | `maintenance.md` | IV |
 | User manual | `user-manual.md` | IV |
 | Jira backlog import | `jira-backlog.csv` | I |
+| Demo script and demo import file | `demo/README.md`, `demo/demo-import.csv` | IV |
 
 Re-render diagrams after editing: `java -jar plantuml.jar -tsvg -o rendered docs/diagrams/*.puml`
 Regenerate the API schema: `python manage.py spectacular --file ../docs/api/openapi.yml`
