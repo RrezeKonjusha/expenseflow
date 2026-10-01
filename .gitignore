@@ -15,3 +15,8 @@ results/
 .DS_Store
 .idea/
 .vscode/
+
+# local reference files (course PDFs, exported plans)
+/*.pdf
+/*.docx
+/expenseflow-component-diagram.png
