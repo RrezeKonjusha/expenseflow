@@ -5,6 +5,7 @@
 | Design and implementation plan (living doc) | team design notes (see SRS and module docs) | all |
 | Phase I: definition, feasibility, requirements analysis, framework | `phase-1.md` | I |
 | Software Requirements Specification | `srs.md` | I |
+| Screenshots of every page (desktop and mobile) | `screenshots/desktop/`, `screenshots/mobile/` | II, IV |
 | Storybook stories (5 components, 19 states), screenshots | `frontend/src/components/*.stories.jsx`, `screenshots/storybook/` | II |
 | Production readiness review: deploy checks, audits, fresh clone | `production-readiness.md` | IV |
 | Final report (all phases, performance, retrospective, hats) | `final-report.md` | final |

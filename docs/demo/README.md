@@ -31,6 +31,17 @@ about 95% of its budget; about 150 expenses over the last 6 months in every stat
 | 10 | any | Grafana metrics panel and Loki logs, `/health/`, green GitHub Actions run, GitHub Project board, a merged PR with its self-review | Monitoring, logging, CI/CD, Git, project management |
 | 11 | slides | Coverage %, Cypress video, Locust chart, ZAP summary | Testing |
 
+## Rehearsal check
+
+`python tests/demo/dry_run.py` runs steps 1, 3, 4, 6, 7, 8, 9 and 10 through the API against a freshly seeded stack
+and checks each documented outcome; steps 2 and 5 are covered by Cypress spec 1 and `tests/browser/refresh-race.mjs`.
+Last run (2 October 2026, local stack): **16/16 checks as written**: the import created 4 and rejected row 5, the
+GAMMA approval returned "Project GAMMA budget would be exceeded (budget 3000.00, spent 2850.00, this expense
+190.00)", and the reimbursement run marked 21 expenses.
+
+Difference from the original design document (section 14): step 3 there fixes the 60 EUR meal with 2 attendees,
+which still breaks the 25 EUR per attendee cap (2 x 25 = 50). This script uses 3 attendees.
+
 ## Fallbacks
 
 If email is slow, show the message in Mailpit on the local stack. If the network fails, run the same script on the
