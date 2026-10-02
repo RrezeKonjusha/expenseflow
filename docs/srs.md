@@ -54,4 +54,4 @@ Version 1.0 · September 2026 · Team: M1-M5 (fill in names) · UBT Lab Course 2
 React, Django, PostgreSQL, MongoDB and Docker are mandated by the team; hosting on a single VPS; team of exactly 5.
 
 ## 7. Feasibility
-Technical: all components are mature open source with large communities. Economic: free tiers and student credit. Schedule: 7 two-week sprints (see Jira).
+Technical: all components are mature open source with large communities. Economic: free tiers and student credit. Schedule: 7 two-week sprints, tracked as GitHub milestones on the project board.
