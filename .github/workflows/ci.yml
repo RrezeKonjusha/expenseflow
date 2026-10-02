@@ -64,6 +64,8 @@ jobs:
         env: { CYPRESS_INSTALL_BINARY: 0 }
       - run: npm run lint
       - run: npm run build
+      - name: Storybook builds (component-driven development)
+        run: npm run build-storybook
 
   e2e:
     name: Test environment (Docker) + Newman + Cypress
