@@ -14,11 +14,11 @@ Cypress.Commands.add('login', (email, password = PASSWORD) => {
 // Emails are sent by the Celery worker, so poll until the message arrives.
 Cypress.Commands.add('lastEmailTo', (address, attempts = 20) =>
   cy
-    .request(`${Cypress.env('mailpitUrl')}/api/v1/search?query=to:${encodeURIComponent(address)}`)
+    .request(`${Cypress.expose('mailpitUrl')}/api/v1/search?query=to:${encodeURIComponent(address)}`)
     .then((res) => {
       if (res.body.messages.length) {
         return cy
-          .request(`${Cypress.env('mailpitUrl')}/api/v1/message/${res.body.messages[0].ID}`)
+          .request(`${Cypress.expose('mailpitUrl')}/api/v1/message/${res.body.messages[0].ID}`)
           .then((msg) => msg.body.Text);
       }
       if (attempts <= 1) throw new Error(`No email to ${address} arrived in Mailpit`);
