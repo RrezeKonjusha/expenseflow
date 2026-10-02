@@ -1,0 +1,6 @@
+type,project_code,amount,expense_date,description,distance_km,destination,attendees,item_name,serial_no
+TRAVEL,ALPHA,36.00,2026-09-29,Client workshop in Prizren,120,Prizren,,,
+MEAL,BETA,45.00,2026-09-25,Lunch with distributor,,,2,,
+EQUIPMENT,ALPHA,89.90,2026-09-20,USB-C hub for the meeting room,,,,USB-C hub,HUB-2026-0117
+TRAVEL,DELTA,22.40,2026-09-12,Site visit in Peja,56,Peja,,,
+MEAL,ALPHA,60.00,2026-09-27,Dinner with one guest (breaks the 25 EUR per attendee policy),,,1,,
