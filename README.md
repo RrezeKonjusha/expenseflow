@@ -26,7 +26,7 @@ docker compose exec api python manage.py seed_demo --reset
 | --- | --- |
 | https://localhost | App (accept the local certificate once) |
 | https://localhost/api/docs/ | Swagger UI (OpenAPI 3.0) |
-| https://localhost/admin/ | Django admin |
+| https://localhost/django-admin/ | Django admin |
 | http://localhost:8025 | Mailpit: activation and reset emails |
 | http://localhost:3000 | Grafana (admin / GRAFANA_PASSWORD): metrics dashboard, logs in Explore > Loki |
 
