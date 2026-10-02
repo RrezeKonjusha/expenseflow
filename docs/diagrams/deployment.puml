@@ -19,6 +19,7 @@ node "DigitalOcean droplet (Ubuntu 24.04, Docker)" as VPS {
     database "mongo:7" as MG
     database "redis:7" as RD
     node "prometheus + grafana" as MON
+    node "loki + promtail" as LOKI
   }
 }
 actor "Users" as USERS
@@ -39,4 +40,5 @@ API --> RD
 WK --> RD
 WK --> SMTP
 MON --> API : /metrics
+LOKI ..> API : container logs (Docker socket)
 @enduml
