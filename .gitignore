@@ -20,3 +20,4 @@ results/
 /*.pdf
 /*.docx
 /expenseflow-component-diagram.png
+frontend/storybook-static/
