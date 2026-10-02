@@ -2,11 +2,19 @@ name: Deploy
 
 # main -> https://<domain> (production). There is no staging server: the ephemeral Docker stack in the CI
 # e2e job is the test and staging environment. Secrets live in the `production` environment:
-# VPS_HOST, VPS_USER, VPS_SSH_KEY, DOMAIN. The server keeps its own .env.
+# VPS_HOST, VPS_USER, VPS_SSH_KEY, DOMAIN. The server keeps its own .env (scripts/server-bootstrap.sh).
+#
+# Rollback: Actions > Deploy > Run workflow, set "image_tag" to the commit SHA of a previous good release.
+# Nothing is rebuilt; the server switches to those images (kept for 7 days).
 on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Redeploy an existing image tag (a previous commit SHA) instead of building. Empty = build this commit."
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -14,9 +22,8 @@ permissions:
 
 jobs:
   images:
+    if: ${{ github.event_name == 'push' || inputs.image_tag == '' }}
     runs-on: ubuntu-latest
-    outputs:
-      registry: ${{ steps.vars.outputs.registry }}
     steps:
       - uses: actions/checkout@v4
       - id: vars
@@ -36,16 +43,22 @@ jobs:
 
   deploy:
     needs: images
+    # also runs when `images` was skipped for a rollback, never after a failed build
+    if: ${{ !failure() && !cancelled() }}
     runs-on: ubuntu-latest
     environment: production
     env:
       STACK: prod
       HOST: ${{ secrets.DOMAIN }}
       CONFIGURED: ${{ secrets.VPS_HOST != '' }}
+      TAG: ${{ inputs.image_tag || github.sha }}
     steps:
       - name: Skip until the server is set up
         if: env.CONFIGURED != 'true'
         run: echo "::notice::VPS_HOST is not set in the production environment yet, so the deploy is skipped (see docs/deployment.md)."
+      - id: vars
+        if: env.CONFIGURED == 'true'
+        run: echo "registry=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
       - name: Deploy over SSH
         if: env.CONFIGURED == 'true'
         uses: appleboy/ssh-action@v1.2.0
@@ -53,18 +66,20 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          envs: STACK
+          envs: STACK,TAG
           script: |
             set -e
             cd ~/expenseflow-$STACK
             git pull --ff-only
-            export IMAGE_TAG=${{ github.sha }} REGISTRY=${{ needs.images.outputs.registry }}
+            export IMAGE_TAG=$TAG REGISTRY=${{ steps.vars.outputs.registry }}
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker compose -p $STACK -f docker-compose.yml -f docker-compose.prod.yml pull
             docker compose -p $STACK -f docker-compose.yml -f docker-compose.prod.yml up -d --remove-orphans
-            docker image prune -f
+            echo "deployed $IMAGE_TAG"
+            # keep a week of older images so a rollback does not need to download anything
+            docker image prune -af --filter "until=168h"
       - name: Smoke check
         if: env.CONFIGURED == 'true'
         run: |
-          for i in $(seq 1 30); do curl -fs "https://$HOST/health/" && exit 0; sleep 5; done
+          for _ in $(seq 1 30); do curl -fs "https://$HOST/health/" && exit 0; sleep 5; done
           exit 1

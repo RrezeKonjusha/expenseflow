@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Restore PostgreSQL and MongoDB from one backup set (the STAMP in the file names).
-#   infra/backup/restore.sh 2026-10-02-0200
+#   scripts/restore.sh 2026-10-02-0200
 # Stops api and worker so nothing writes during the restore, then starts them again.
 set -euo pipefail
 
