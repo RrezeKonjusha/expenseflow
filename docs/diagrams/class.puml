@@ -18,7 +18,7 @@ enum ExpenseStatus {
   REJECTED
   REIMBURSED
 }
-class User {
+class User <<AbstractBaseUser>> {
   email : str
   first_name : str
   last_name : str
@@ -41,21 +41,31 @@ class Project {
 class ProjectMember <<association>> {
   joined_at : DateTime
 }
-abstract class Expense <<polymorphic>> {
-  type : str
+class Expense <<polymorphic base>> {
+  type : ExpenseType
   amount : Decimal
   currency : str
   expense_date : Date
   description : str
   status : ExpenseStatus
+  submitted_at : DateTime
+  decided_at : DateTime
   rejection_reason : str
-  +{abstract} type_violations() : dict
-  +reimbursable_amount() : Decimal
-  +policy_violations(is_member) : dict
+  reimbursed_at : DateTime
+  +type_violations() : dict  <<overridden>>
+  +reimbursable_amount() : Decimal  <<overridden>>
+  +policy_violations(is_member, today) : dict
+  +ensure_policy(is_member)
+  +is_editable() : bool
   +submit(is_member)
   +approve(by : User)
   +reject(by : User, reason : str)
   +reopen()
+}
+enum ExpenseType {
+  TRAVEL
+  MEAL
+  EQUIPMENT
 }
 class TravelExpense {
   distance_km : Decimal
@@ -90,6 +100,13 @@ Project "1" --> "0..*" Expense
 User "0..1" --> "0..*" Expense : decided_by
 User ..> Role
 Expense ..> ExpenseStatus
+Expense ..> ExpenseType
+note right of Expense
+  Polymorphism: services call expense.policy_violations()
+  on the base type; django-polymorphic returns the real
+  subclass, so each subclass's type_violations() and
+  reimbursable_amount() run (multi-table inheritance).
+end note
 
 package "MongoDB documents" {
   class AuditLog <<Document>> {
@@ -103,6 +120,10 @@ package "MongoDB documents" {
     email : str
     role : str
   }
+  class Target <<EmbeddedDocument>> {
+    type : str
+    id : str
+  }
   class Change <<EmbeddedDocument>> {
     field : str
     old : any
@@ -113,10 +134,19 @@ package "MongoDB documents" {
     scope : str
     generated_at : DateTime
   }
+  class Owner <<EmbeddedDocument>> {
+    user_id : int
+    email : str
+  }
   class Criteria <<EmbeddedDocument>> {
     date_from, date_to : Date
     group_by : str
     statuses, types : list
+    department_ids, project_ids : list
+  }
+  class Totals <<EmbeddedDocument>> {
+    count : int
+    total : Decimal
   }
   class Row <<EmbeddedDocument>> {
     key, label : str
@@ -124,8 +154,11 @@ package "MongoDB documents" {
     total : Decimal
   }
   AuditLog *-- "0..1" Actor
+  AuditLog *-- "0..1" Target
   AuditLog *-- "0..*" Change
+  ReportSnapshot *-- "1" Owner
   ReportSnapshot *-- "1" Criteria
   ReportSnapshot *-- "0..*" Row
+  ReportSnapshot *-- "0..1" Totals
 }
 @enduml

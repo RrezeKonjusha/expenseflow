@@ -1,4 +1,4 @@
-# Staging and production on the VPS. Images come from GHCR, nothing is built on the server.
+# Production on the VPS. Images come from GHCR, nothing is built on the server.
 services:
   web:
     build: !reset null

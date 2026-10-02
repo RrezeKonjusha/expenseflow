@@ -1,12 +1,13 @@
 @startuml deployment
 !include _style.iuml
-title ExpenseFlow - Deployment diagram (production and staging on one VPS)
+title ExpenseFlow - Deployment diagram (production VPS; CI stack = test/staging)
 
 node "Developer laptop" {
   artifact "git push" as PUSH
 }
 cloud "GitHub" {
   node "GitHub Actions" as GA
+  node "Actions runner: ephemeral Docker Compose stack\n(test + staging: Newman, Cypress)" as CI
   database "GHCR\n(api, web images)" as GHCR
 }
 node "DigitalOcean droplet (Ubuntu 24.04, Docker)" as VPS {
@@ -18,8 +19,8 @@ node "DigitalOcean droplet (Ubuntu 24.04, Docker)" as VPS {
     database "mongo:7" as MG
     database "redis:7" as RD
     node "prometheus + grafana" as MON
+    node "loki + promtail" as LOKI
   }
-  node "Docker Compose project: staging\n(same services, staging.<domain>)" as STG
 }
 actor "Users" as USERS
 cloud "Let's Encrypt" as LE
@@ -27,6 +28,7 @@ cloud "Brevo SMTP" as SMTP
 
 PUSH --> GA
 GA --> GHCR : build + push (tag = SHA)
+GA --> CI : every PR and push
 GA --> VPS : SSH deploy (compose pull / up)
 GHCR --> VPS : docker pull
 USERS --> WEB : HTTPS
@@ -38,4 +40,5 @@ API --> RD
 WK --> RD
 WK --> SMTP
 MON --> API : /metrics
+LOKI ..> API : container logs (Docker socket)
 @enduml

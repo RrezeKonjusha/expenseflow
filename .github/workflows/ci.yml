@@ -20,8 +20,19 @@ jobs:
         env: { POSTGRES_DB: expenseflow, POSTGRES_USER: expenseflow, POSTGRES_PASSWORD: expenseflow }
         ports: ["5432:5432"]
         options: --health-cmd "pg_isready -U expenseflow" --health-interval 5s --health-retries 10
+      # real MongoDB and Redis: the suite runs against them, and `real_services` tests are enabled
+      mongo:
+        image: mongo:7
+        ports: ["27017:27017"]
+        options: --health-cmd "mongosh --quiet --eval 'db.runCommand({ping:1}).ok'" --health-interval 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: --health-cmd "redis-cli ping" --health-interval 5s --health-retries 10
     env:
       DATABASE_URL: postgres://expenseflow:expenseflow@localhost:5432/expenseflow
+      TEST_MONGO_URL: mongodb://localhost:27017/expenseflow_test
+      TEST_REDIS_URL: redis://localhost:6379/15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -76,6 +87,11 @@ jobs:
         env:
           CYPRESS_BASE_URL: https://localhost
           CYPRESS_MAILPIT_URL: http://localhost:8025
+      - name: Session survives rapid reloads (real Chrome, no proxy)
+        working-directory: tests/browser
+        run: |
+          npm i --no-save --no-package-lock puppeteer-core@24
+          CHROME_PATH=$(which google-chrome) BASE_URL=https://localhost node refresh-race.mjs
       - if: always()
         uses: actions/upload-artifact@v4
         with:
