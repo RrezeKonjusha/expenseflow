@@ -1,0 +1,58 @@
+@startuml navigation
+!include _style.iuml
+title ExpenseFlow - Navigation scheme (SPA routes by role)
+
+state "Public" as PUB {
+  state "/login" as LOGIN
+  state "/register" as REG
+  state "/activate/:uid/:token" as ACT
+  state "/forgot-password" as FORGOT
+  state "/reset-password/:uid/:token" as RESET
+}
+state "Signed in: all roles (AppLayout + menu)" as APP {
+  state "/ Dashboard" as DASH
+  state "/expenses My expenses" as LIST
+  state "/expenses/new" as NEW
+  state "/expenses/:id" as DETAIL
+  state "/expenses/:id/edit" as EDIT
+  state "/expenses/import" as IMPORT
+  state "/reports Report builder" as REPORTS
+  state "/reports/:id Saved report" as RVIEW
+  state "/profile" as PROFILE
+  state "MANAGER, ADMIN" as MGR {
+    state "/approvals" as APPROVALS
+  }
+  state "ADMIN" as ADM {
+    state "/admin/users" as USERS
+    state "/admin/departments" as DEPTS
+    state "/admin/projects" as PROJECTS
+    state "/admin/audit" as AUDIT
+  }
+}
+
+[*] --> LOGIN : no session (refresh cookie missing or expired)
+[*] --> DASH : valid refresh cookie
+REG --> ACT : link in activation email
+ACT --> LOGIN
+LOGIN --> FORGOT
+FORGOT --> RESET : link in reset email
+RESET --> LOGIN
+LOGIN --> DASH : login OK
+DASH --> LIST
+LIST --> NEW
+LIST --> DETAIL
+NEW --> DETAIL : saved as DRAFT
+DETAIL --> EDIT : DRAFT only
+EDIT --> DETAIL
+LIST --> IMPORT
+REPORTS --> RVIEW : save report
+DASH --> APPROVALS : role guard
+APPROVALS --> DETAIL
+DASH --> USERS : role guard
+APP --> LOGIN : logout or refresh fails
+note bottom of APP
+  Every page is lazy-loaded. RequireAuth guards the signed-in tree;
+  RequireAuth roles=[...] guards Approvals and Admin. A route the role
+  may not open redirects to the Dashboard. Unknown paths show 404.
+end note
+@enduml
