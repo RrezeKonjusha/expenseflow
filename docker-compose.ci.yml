@@ -16,3 +16,7 @@ services:
     profiles: [monitoring]
   grafana:
     profiles: [monitoring]
+  loki:
+    profiles: [monitoring]
+  promtail:
+    profiles: [monitoring]
