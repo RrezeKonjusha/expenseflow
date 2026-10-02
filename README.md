@@ -56,6 +56,7 @@ ruff check . && ruff format --check .   # lint
 lint-imports                            # module layering contracts
 pytest --cov                            # 80+ tests, coverage gate 80%
 cd ../frontend && npm run lint && npm run build
+npm run storybook                       # component stories at http://localhost:6006
 npx newman run tests/postman/expenseflow.postman_collection.json -e tests/postman/local.postman_environment.json
 ```
 
