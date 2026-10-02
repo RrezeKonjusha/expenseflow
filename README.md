@@ -72,4 +72,5 @@ Solo project (approved exception to the 5-person team rule): one developer weari
 - Commits: Conventional Commits that reference the issue, e.g. `feat(expenses): add submit transition (#35)`.
   PR bodies say `Closes #<issue>`.
 
+Every command (run, test, demo, load, security, docs, deploy) is in `docs/commands.md`.
 See `docs/README.md` for the documentation index.
