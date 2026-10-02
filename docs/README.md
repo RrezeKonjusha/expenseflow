@@ -11,6 +11,8 @@
 | Module documentation (public API, logging, monitoring) | `modules/*.md` | II, III |
 | Test plan and test cases | `test-plan.md` | III, IV |
 | Deployment guide | `deployment.md` | IV |
+| Project management, Git workflow, hats | `project-management.md` | I |
+| Demo script and demo import file | `demo/README.md`, `demo/demo-import.csv` | IV |
 | Maintenance and versioning | `maintenance.md` | IV |
 | User manual | `user-manual.md` | IV |
 | Backlog (backlog keys mapped to GitHub issues) | `backlog.csv` | I |

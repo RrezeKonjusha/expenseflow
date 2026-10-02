@@ -10,7 +10,7 @@ Cypress.Commands.add('login', (email, password = PASSWORD) => {
   cy.contains('Waiting for approval');
 });
 
-// Latest email for an address from Mailpit (dev/staging SMTP catcher).
+// Latest email for an address from Mailpit (SMTP catcher in the dev and CI stacks).
 // Emails are sent by the Celery worker, so poll until the message arrives.
 Cypress.Commands.add('lastEmailTo', (address, attempts = 20) =>
   cy

@@ -1,4 +1,4 @@
-"""Load test: locust -f tests/locust/locustfile.py --host https://staging.<domain>
+"""Load test: locust -f tests/locust/locustfile.py --host https://localhost  (the CI-mode stack is the staging target)
 
 Headless, 1000 users, ramp 50/s, 5 minutes:
   locust -f tests/locust/locustfile.py --host https://localhost --headless -u 1000 -r 50 -t 5m --csv results/run
@@ -21,7 +21,7 @@ class Employee(HttpUser):
     wait_time = between(1, 3)
 
     def on_start(self):
-        self.client.verify = False  # self-signed certificate on local/staging
+        self.client.verify = False  # self-signed certificate on the local stack
         email = f"{random.choice(USERS)}@expenseflow.dev"
         r = self.client.post("/api/v1/auth/login/", json={"email": email, "password": PASSWORD}, name="login")
         self.client.headers["Authorization"] = f"Bearer {r.json().get('access', '')}"
