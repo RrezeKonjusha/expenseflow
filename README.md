@@ -9,7 +9,7 @@ Employees submit expenses, department managers approve them, admins reimburse an
 | --- | --- |
 | Backend (4 modules: accounts, users, expenses, reporting + core) | `backend/` |
 | Frontend SPA | `frontend/` |
-| Docker, Caddy gateway, Prometheus, Grafana | `docker-compose*.yml`, `infra/` |
+| Docker, Caddy gateway, Prometheus, Grafana, Loki + Promtail (central logs) | `docker-compose*.yml`, `infra/` |
 | API contract tests (Newman), load tests (Locust) | `tests/` |
 | Diagrams (PlantUML + rendered), SRS, test plan, manuals, Jira backlog | `docs/` |
 | CI/CD | `.github/workflows/` |
@@ -28,7 +28,7 @@ docker compose exec api python manage.py seed_demo --reset
 | https://localhost/api/docs/ | Swagger UI (OpenAPI 3.0) |
 | https://localhost/django-admin/ | Django admin |
 | http://localhost:8025 | Mailpit: activation and reset emails |
-| http://localhost:3000 | Grafana (admin / GRAFANA_PASSWORD) |
+| http://localhost:3000 | Grafana (admin / GRAFANA_PASSWORD): metrics dashboard, logs in Explore > Loki |
 
 Demo logins (password `Demo-Pass-2026!`): `admin@expenseflow.dev`, `besa@expenseflow.dev` (manager, Engineering),
 `driton@expenseflow.dev` (manager, Sales), `arta@expenseflow.dev` (employee).

@@ -25,7 +25,10 @@ If the bad release contained a migration, restore the database backup taken befo
 ## Monitoring
 - `/health/` checks PostgreSQL, MongoDB and Redis (503 when any is down).
 - Grafana dashboard "ExpenseFlow API": request rate, p95 latency, status codes, DB query rate.
-- Logs: `docker compose -p prod logs -f api worker` (JSON lines with `request_id` and `module`).
+- Logs are centralised: Promtail ships every container's output to Loki (kept 14 days). In Grafana, open Explore,
+  pick the Loki datasource and query for example `{service="api", level="ERROR"}` or `{service="api"} |= "<request_id>"`.
+  The dashboard "ExpenseFlow API" has a panel with all API and worker warnings and errors.
+- Raw logs without Grafana: `docker compose -p prod logs -f api worker` (JSON lines with `request_id` and `module`).
 
 ## Routine tasks
 | Task | How |
