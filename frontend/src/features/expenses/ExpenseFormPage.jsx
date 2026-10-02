@@ -48,16 +48,20 @@ export default function ExpenseFormPage() {
     const jobs = [projectsApi.list({ is_active: true }).then(setProjects)];
     if (editing)
       jobs.push(
-        expensesApi
-          .get(id)
-          .then((e) =>
-            reset({ ...EMPTY, ...Object.fromEntries(Object.entries(e).filter(([, v]) => v !== null)) }),
-          ),
+        expensesApi.get(id).then((e) => {
+          // the server's _links say what may happen now; only drafts offer "update"
+          if (!e._links?.update) {
+            enqueueSnackbar(`Only drafts can be edited. This expense is ${e.status}.`, { variant: 'info' });
+            navigate(`/expenses/${id}`, { replace: true });
+            return;
+          }
+          reset({ ...EMPTY, ...Object.fromEntries(Object.entries(e).filter(([, v]) => v !== null)) });
+        }),
       );
     Promise.all(jobs)
       .catch((err) => enqueueSnackbar(errorMessage(err), { variant: 'error' }))
       .finally(() => setLoading(false));
-  }, [id, editing, reset, enqueueSnackbar]);
+  }, [id, editing, reset, enqueueSnackbar, navigate]);
 
   const onSubmit = async (values) => {
     try {
