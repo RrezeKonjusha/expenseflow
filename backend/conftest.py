@@ -1,4 +1,5 @@
 import pytest
+from django.conf import settings
 from django.core.cache import cache
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -6,6 +7,15 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from apps.core.documents import AuditLog
 from apps.reporting.documents import ReportSnapshot
 from tests.factories import DepartmentFactory, ProjectFactory, UserFactory
+
+
+def pytest_collection_modifyitems(config, items):
+    if settings.TEST_MONGO_URL and settings.TEST_REDIS_URL:
+        return
+    skip = pytest.mark.skip(reason="needs TEST_MONGO_URL and TEST_REDIS_URL (real MongoDB and Redis)")
+    for item in items:
+        if "real_services" in item.keywords:
+            item.add_marker(skip)
 
 
 @pytest.fixture(autouse=True)
