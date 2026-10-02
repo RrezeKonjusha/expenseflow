@@ -234,4 +234,4 @@ LOGGING = {
 }
 
 # Business settings
-DASHBOARD_CACHE_SECONDS = 300
+DASHBOARD_CACHE_SECONDS = env.int("DASHBOARD_CACHE_SECONDS", 300)  # 0 = no cache (load-test baseline)

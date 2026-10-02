@@ -11,7 +11,7 @@ Employees submit expenses, department managers approve them, admins reimburse an
 | Frontend SPA | `frontend/` |
 | Docker, Caddy gateway, Prometheus, Grafana, Loki + Promtail (central logs) | `docker-compose*.yml`, `infra/` |
 | API contract tests (Newman), load tests (Locust) | `tests/` |
-| Diagrams (PlantUML + rendered), SRS, test plan, manuals, Jira backlog | `docs/` |
+| Diagrams (PlantUML + rendered), SRS, test plan, manuals, backlog | `docs/` |
 | CI/CD | `.github/workflows/` |
 
 ## Run it locally (Docker, recommended)
@@ -61,8 +61,14 @@ npx newman run tests/postman/expenseflow.postman_collection.json -e tests/postma
 
 ## Team workflow
 
-- Branches: `feature/EXP-<n>-short-name` from `develop`; PR into `develop` (1 review, CI green); `develop` -> `main` at sprint end.
-- Commits: `EXP-12 feat(expenses): add submit transition` (Conventional Commits + Jira key).
-- Jira: import `docs/jira-backlog.csv` (Jira settings > System > External system import > CSV).
+Solo project (approved exception to the 5-person team rule): one developer wearing five hats, shown as `hat:*` labels.
+
+- Tracking: GitHub Issues + the GitHub Project board (To Do, In Progress, In Review, Done). Epics are parent issues
+  with sub-issues, sprints are milestones (`Sprint 1` to `Sprint 7`). `docs/backlog.csv` maps the original backlog keys
+  (`EXP-n`) to issue numbers.
+- Branches: `feature/<issue>-short-name` from `develop`; PR into `develop` with a green CI and a self-review checklist
+  comment; `develop` -> `main` at sprint end.
+- Commits: Conventional Commits that reference the issue, e.g. `feat(expenses): add submit transition (#35)`.
+  PR bodies say `Closes #<issue>`.
 
 See `docs/README.md` for the documentation index.
