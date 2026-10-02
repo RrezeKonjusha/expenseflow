@@ -14,14 +14,5 @@ export default defineConfig({
   build: {
     sourcemap: false,
     chunkSizeWarningLimit: 900,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          mui: ['@mui/material', '@mui/icons-material'],
-          grid: ['@mui/x-data-grid'],
-          charts: ['recharts'],
-        },
-      },
-    },
   },
 });

@@ -6,6 +6,6 @@ export default defineConfig({
     video: true,
     viewportWidth: 1366,
     viewportHeight: 860,
-    env: { mailpitUrl: process.env.CYPRESS_MAILPIT_URL || 'http://localhost:8025' },
+    expose: { mailpitUrl: process.env.CYPRESS_MAILPIT_URL || 'http://localhost:8025' },
   },
 });
