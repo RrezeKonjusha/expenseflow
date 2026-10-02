@@ -21,7 +21,10 @@ ignore = ["S101", "S105", "S106", "S311", "S608", "DJ001", "DJ008", "DJ012", "E5
 DJANGO_SETTINGS_MODULE = "config.settings_test"
 python_files = ["test_*.py"]
 addopts = "-q --reuse-db"
-markers = ["security: security-focused tests"]
+markers = [
+    "security: security-focused tests",
+    "real_services: needs real MongoDB and Redis (TEST_MONGO_URL, TEST_REDIS_URL); skipped otherwise",
+]
 filterwarnings = ["ignore::DeprecationWarning"]
 
 [tool.coverage.run]
