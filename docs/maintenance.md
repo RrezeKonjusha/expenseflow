@@ -6,12 +6,12 @@
 - Database changes only through Django migrations (including RunSQL for triggers and the procedure); never edit applied migrations.
 
 ## Backups (cron on the VPS, 02:00 daily, keep 7 days)
-`infra/backup/backup.sh` dumps PostgreSQL (`pg_dump -Fc`) and MongoDB (`mongodump --archive --gzip`) into
+`scripts/backup.sh` dumps PostgreSQL (`pg_dump -Fc`) and MongoDB (`mongodump --archive --gzip`) into
 `~/backups`, writing to a temporary name first so a failed dump never looks like a good backup, and deletes sets
 older than 7 days. Install the cron job once as the deploy user:
 ```bash
 crontab -e
-0 2 * * * cd ~/expenseflow-prod && infra/backup/backup.sh >> ~/backups/backup.log 2>&1
+0 2 * * * cd ~/expenseflow-prod && scripts/backup.sh >> ~/backups/backup.log 2>&1
 ```
 Copy the backups off the server now and then (for example `scp deploy@<host>:backups/* .`): a backup on the same
 disk does not survive losing the droplet.
@@ -19,7 +19,7 @@ disk does not survive losing the droplet.
 ## Restore
 ```bash
 ls ~/backups                                   # pick a set, e.g. pg-2026-10-02-0200.dump + mongo-2026-10-02-0200.archive.gz
-infra/backup/restore.sh 2026-10-02-0200
+scripts/restore.sh 2026-10-02-0200
 ```
 The script stops `api` and `worker`, restores both databases (`pg_restore --clean --if-exists`,
 `mongorestore --drop`), starts them again and prints `/health/`.

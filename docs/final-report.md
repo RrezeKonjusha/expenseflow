@@ -58,7 +58,7 @@ and video script, the final presentation and this report.
 | --- | --- |
 | Professor and reviewers | `phase-1.md`, `srs.md`, `design.md`, `test-report.md`, this report |
 | Developers | `README.md`, `modules/*.md`, `api/openapi.yml` (Swagger at `/api/docs/`), `diagrams/` |
-| Operators | `deployment.md`, `maintenance.md`, `infra/backup/` |
+| Operators | `deployment.md`, `maintenance.md`, `scripts/` |
 | End users | `user-manual.md` |
 | Process | `project-management.md`, `backlog.csv` |
 | Defense | `defense-guide.md`, `demo/README.md`, `demo/video-script.md` |
