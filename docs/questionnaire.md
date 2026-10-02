@@ -23,7 +23,7 @@ responses (at least 10). Results feed SRS section 2 and the Phase I defense.
 8. When responses arrive, open **Responses > Link to Sheets** to get a spreadsheet. Keep the form open until you
    have 15 or more responses or 7 days have passed.
 9. Take two screenshots for the Phase I document: the form editor, and the **Responses > Summary** charts.
-10. Paste the summary to Claude (counts per option and the open answers). The results section below is written
+10. Copy the summary (counts per option and the open answers) into section 3 below; the results are written
     from them.
 
 ## 2. Questions
