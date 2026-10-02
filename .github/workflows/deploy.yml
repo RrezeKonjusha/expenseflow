@@ -1,10 +1,11 @@
 name: Deploy
 
-# develop -> staging.<domain>, main -> <domain>. Requires repository secrets:
-# VPS_HOST, VPS_USER, VPS_SSH_KEY, DOMAIN. The server keeps its own .env per environment.
+# main -> https://<domain> (production). There is no staging server: the ephemeral Docker stack in the CI
+# e2e job is the test and staging environment. Secrets live in the `production` environment:
+# VPS_HOST, VPS_USER, VPS_SSH_KEY, DOMAIN. The server keeps its own .env.
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -36,12 +37,17 @@ jobs:
   deploy:
     needs: images
     runs-on: ubuntu-latest
-    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
+    environment: production
     env:
-      STACK: ${{ github.ref_name == 'main' && 'prod' || 'staging' }}
-      HOST: ${{ github.ref_name == 'main' && secrets.DOMAIN || format('staging.{0}', secrets.DOMAIN) }}
+      STACK: prod
+      HOST: ${{ secrets.DOMAIN }}
+      CONFIGURED: ${{ secrets.VPS_HOST != '' }}
     steps:
+      - name: Skip until the server is set up
+        if: env.CONFIGURED != 'true'
+        run: echo "::notice::VPS_HOST is not set in the production environment yet, so the deploy is skipped (see docs/deployment.md)."
       - name: Deploy over SSH
+        if: env.CONFIGURED == 'true'
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -58,6 +64,7 @@ jobs:
             docker compose -p $STACK -f docker-compose.yml -f docker-compose.prod.yml up -d --remove-orphans
             docker image prune -f
       - name: Smoke check
+        if: env.CONFIGURED == 'true'
         run: |
           for i in $(seq 1 30); do curl -fs "https://$HOST/health/" && exit 0; sleep 5; done
           exit 1

@@ -11,9 +11,10 @@
 | Test plan and test cases | `test-plan.md` | III, IV |
 | Deployment guide | `deployment.md` | IV |
 | Project management, Git workflow, hats | `project-management.md` | I |
+| Demo script and demo import file | `demo/README.md`, `demo/demo-import.csv` | IV |
 | Maintenance and versioning | `maintenance.md` | IV |
 | User manual | `user-manual.md` | IV |
-| Jira backlog import | `jira-backlog.csv` | I |
+| Backlog (backlog keys mapped to GitHub issues) | `backlog.csv` | I |
 
 Re-render diagrams after editing: `java -jar plantuml.jar -tsvg -o rendered docs/diagrams/*.puml`
 Regenerate the API schema: `python manage.py spectacular --file ../docs/api/openapi.yml`
