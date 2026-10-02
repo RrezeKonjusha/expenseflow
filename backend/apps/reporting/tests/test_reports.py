@@ -71,6 +71,14 @@ def test_dashboard_scoped_and_cached(data):
     assert admin.get(f"{R}dashboard/").data["counts"]["SUBMITTED"] == 1
 
 
+def test_dashboard_cache_can_be_switched_off(data, settings):
+    settings.DASHBOARD_CACHE_SECONDS = 0  # the load-test baseline
+    admin = data.client(data.admin)
+    assert admin.get(f"{R}dashboard/").data["counts"]["SUBMITTED"] == 0
+    MealFactory(employee=data.arta, project=data.alpha, status=ExpenseStatus.SUBMITTED)
+    assert admin.get(f"{R}dashboard/").data["counts"]["SUBMITTED"] == 1  # recomputed, not cached
+
+
 @pytest.mark.parametrize("group_by", ["department", "project", "employee", "type", "status", "month"])
 def test_run_report_all_groupings(data, group_by):
     r = data.client(data.admin).post(R + "run/", criteria(group_by=group_by), format="json")
