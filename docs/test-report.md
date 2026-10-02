@@ -5,7 +5,7 @@ ExpenseFlow · Rreze Konjusha · runs of 1 and 2 October 2026 · branch `develop
 **Result.** Every functional, API, end-to-end and security test passes: 85 backend tests at 94.18% coverage (gate 80%),
 42/42 Newman assertions, 9/9 Cypress tests, 12/12 security tests, 0 High findings in two OWASP ZAP scans, and 0 failed requests out of 233,419 in two
 1000-user load runs. One non-functional target is not met: dashboard p95 stays near 1.2 s under 1000 users on a
-single API replica (target 800 ms). Thirteen defects were found and fixed during testing.
+single API replica (target 800 ms). Fourteen defects were found and fixed during testing.
 
 ## 1. Environment
 
@@ -30,7 +30,7 @@ single API replica (target 800 ms). Thirteen defects were found and fixed during
 | Session robustness | Puppeteer, real Chrome | Leaving pages mid-refresh keeps the session | **10/10** (0/5 before the fix) |
 | Load | Locust | 1000 users, 5 minutes, cache on and off | 0 failures; see section 4 |
 | Vulnerability scan | OWASP ZAP baseline and API scan | Web app and all 71 API operations | **0 High**; 2 Low fixed, rest accepted with reasons |
-| Backup and restore | `infra/backup/*.sh` | Delete everything, restore, compare | All 5 checked values identical |
+| Backup and restore | `scripts/backup.sh`, `scripts/restore.sh` | Delete everything, restore, compare | All 5 checked values identical |
 
 ## 3. Test cases
 
@@ -61,7 +61,7 @@ single API replica (target 800 ms). Thirteen defects were found and fixed during
 | TC-23 | Security | Security headers on API responses | nosniff, X-Frame-Options DENY, X-Request-ID | `test_security_headers` | Security | Pass |
 | TC-24 | Integration | Export a cell starting with `=` | Neutralised against formula injection | `test_csv_formula_injection_is_neutralised` | Security | Pass |
 | TC-25 | E2E | Leave pages while the token refresh is running | Still signed in | `tests/browser/refresh-race.mjs` | Edge | Pass (10/10) |
-| TC-26 | Operations | Delete all expenses and both Mongo collections, restore | Counts, sums and budget state identical | `infra/backup/restore.sh` | Recovery | Pass |
+| TC-26 | Operations | Delete all expenses and both Mongo collections, restore | Counts, sums and budget state identical | `scripts/restore.sh` | Recovery | Pass |
 | TC-27 | E2E | Admin opens `/admin/audit` directly | SPA page, not Django admin | Cypress spec 4 | Negative | Pass (after fix D2) |
 
 ## 4. Performance (Locust)
@@ -146,6 +146,7 @@ name `ef.localhost` (local certificate, temporarily allowed in `ALLOWED_HOSTS`).
 | D11 | Demo rehearsal | Demo step 3 fixed a 60 EUR meal with 2 attendees, still over the cap | Script uses 3 attendees | #77 / #84 |
 | D12 | ZAP baseline | No Cache-Control: a stale app shell could survive a deploy; API answers storable | Shell no-cache, assets immutable, API no-store | #65 / #94 |
 | D13 | ZAP baseline | Cross-origin isolation headers missing | COOP and CORP same-origin | #65 / #94 |
+| D14 | Deploy preparation | `.env.example` recommended `smtp+tls://` for production email, a scheme the parser does not know: the API would crash at start with KeyError | Documented `submission://` (STARTTLS), checked against the parser | #99 |
 
 ## 7. Known issues and recommendations
 

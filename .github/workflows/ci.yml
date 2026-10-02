@@ -75,7 +75,7 @@ jobs:
         run: |
           cp .env.example .env
           docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build
-          for i in $(seq 1 60); do curl -skf https://localhost/health/ && break; sleep 3; done
+          for _ in $(seq 1 60); do curl -skf https://localhost/health/ && break; sleep 3; done
           docker compose exec -T api python manage.py seed_demo --reset
       - name: API contract tests (Newman)
         run: npx --yes newman@6 run tests/postman/expenseflow.postman_collection.json -e tests/postman/ci.postman_environment.json --insecure --reporters cli,junit --reporter-junit-export newman.xml
