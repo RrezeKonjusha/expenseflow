@@ -3,9 +3,9 @@
 ExpenseFlow · Rreze Konjusha · runs of 1 and 2 October 2026 · branch `develop` plus the open pull requests named below
 
 **Result.** Every functional, API, end-to-end and security test passes: 85 backend tests at 94.18% coverage (gate 80%),
-42/42 Newman assertions, 9/9 Cypress tests, 12/12 security tests, and 0 failed requests out of 233,419 in two
+42/42 Newman assertions, 9/9 Cypress tests, 12/12 security tests, 0 High findings in two OWASP ZAP scans, and 0 failed requests out of 233,419 in two
 1000-user load runs. One non-functional target is not met: dashboard p95 stays near 1.2 s under 1000 users on a
-single API replica (target 800 ms). Eleven defects were found and fixed during testing.
+single API replica (target 800 ms). Thirteen defects were found and fixed during testing.
 
 ## 1. Environment
 
@@ -29,7 +29,7 @@ single API replica (target 800 ms). Eleven defects were found and fixed during t
 | End-to-end | Cypress 13, Chrome | Register + activate + login; create + submit; manager approves; admin report + export + reimburse + audit | **4 specs, 9/9 tests** |
 | Session robustness | Puppeteer, real Chrome | Leaving pages mid-refresh keeps the session | **10/10** (0/5 before the fix) |
 | Load | Locust | 1000 users, 5 minutes, cache on and off | 0 failures; see section 4 |
-| Vulnerability scan | OWASP ZAP baseline | Whole site through the gateway | Pending, see section 5 |
+| Vulnerability scan | OWASP ZAP baseline and API scan | Web app and all 71 API operations | **0 High**; 2 Low fixed, rest accepted with reasons |
 | Backup and restore | `infra/backup/*.sh` | Delete everything, restore, compare | All 5 checked values identical |
 
 ## 3. Test cases
@@ -102,9 +102,32 @@ Failures: 0 in both runs.
 
 ## 5. Security scan (OWASP ZAP)
 
-Pending. The baseline scan (`zap-baseline.py -t https://localhost/` from inside the gateway's network) was started
-but stopped when the test machine's disk filled up and Docker hung. It is rerun once Docker is back; findings and
-fixes go here.
+Two scans with OWASP ZAP (stable image), both against the full stack through the Caddy gateway over HTTPS: the
+**baseline scan** (spider plus passive rules on the web app) and the **API scan**, which imports the OpenAPI
+specification and runs active attacks (injection, path traversal, header and parameter tampering) against every
+endpoint. Reports: `test-results/zap/`.
+
+| Scan | URLs | FAIL (High) | WARN | PASS |
+| --- | --- | --- | --- | --- |
+| Baseline, first run | web app | 0 | 6 | 61 |
+| API scan (71 operations from OpenAPI) | 127 | **0** | 3 | 117 |
+| Baseline after fixes | web app | **0** | 6 (2 lowered to informational) | 61 |
+
+**No High findings.** Every warning, and what was done:
+
+| Finding | Risk | Decision |
+| --- | --- | --- |
+| No Cache-Control on the app shell and API | Low | **Fixed**: app shell `no-cache`, hashed assets `immutable`, API `no-store` (D12) |
+| Cross-Origin-Opener-Policy / Resource-Policy missing | Low | **Fixed**: both `same-origin` (D13) |
+| Cross-Origin-Embedder-Policy missing | Low | Accepted: `require-corp` can break embedded resources; no cross-origin content to isolate |
+| CSP allows `style-src 'unsafe-inline'` | Medium | Accepted: MUI injects styles at runtime; `script-src` stays `'self'`, which is what stops XSS |
+| Timestamp disclosure in `mui-*.js` | Low | False positive: a constant inside the MUI library |
+| Unexpected Content-Type (78) | Low | Expected: ZAP probes paths the SPA answers with its HTML shell |
+| Modern web application, storable content | Informational | No action |
+| One 502 on `PATCH /projects/10/` during the active scan | Low | Investigated: Django answered 401 but the gateway saw the upstream close first (EOF). Not reproducible in 38 timed attempts; no data exposed. Most likely gunicorn closing the connection before reading the attack body. Logged as a known issue |
+
+ZAP needs SNI to reach Caddy; Java sends none for a dotless name such as `localhost`, so the scans use the extra
+name `ef.localhost` (local certificate, temporarily allowed in `ALLOWED_HOSTS`).
 
 ## 6. Defects found and fixed
 
@@ -121,13 +144,15 @@ fixes go here.
 | D9 | CI | MongoDB service health check used an invalid command | `db.runCommand({ping:1})` | #76 / #82 |
 | D10 | CI on `main` | Deploy job failed on every push without a server | Skips with a notice until the server is set up | #17 / #83 |
 | D11 | Demo rehearsal | Demo step 3 fixed a 60 EUR meal with 2 attendees, still over the cap | Script uses 3 attendees | #77 / #84 |
+| D12 | ZAP baseline | No Cache-Control: a stale app shell could survive a deploy; API answers storable | Shell no-cache, assets immutable, API no-store | #65 / #94 |
+| D13 | ZAP baseline | Cross-origin isolation headers missing | COOP and CORP same-origin | #65 / #94 |
 
 ## 7. Known issues and recommendations
 
 | Item | Recommendation |
 | --- | --- |
 | Dashboard p95 about 1.2 s at 1000 users on one replica | Run with 3 API replicas; add a database index review for the list query; consider a lighter password hasher only for load tests, never in production |
-| ZAP baseline pending | Run and record findings; fix any High |
+| Rare 502 when an unauthenticated request with a body is refused early | Read the request body before answering, or put gunicorn behind a buffering worker class; retest with ZAP |
 | Rotation is strict: a refresh aborted by the network (not by navigation) still signs the user out | Acceptable for this project; a short server-side grace period for the previous token would remove it |
 
 ## 8. How to reproduce
