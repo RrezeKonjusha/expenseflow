@@ -28,7 +28,7 @@ docker compose exec api python manage.py seed_demo --reset
 | https://localhost/api/docs/ | Swagger UI (OpenAPI 3.0) |
 | https://localhost/django-admin/ | Django admin |
 | http://localhost:8025 | Mailpit: activation and reset emails |
-| http://localhost:3000 | Grafana (admin / GRAFANA_PASSWORD): metrics dashboard, logs in Explore > Loki |
+| https://localhost/grafana/ | Grafana: user `admin`, password = `GRAFANA_PASSWORD` in `.env` (`change-me` by default); metrics dashboard, logs in Explore > Loki |
 
 Demo logins (password `Demo-Pass-2026!`): `admin@expenseflow.dev`, `besa@expenseflow.dev` (manager, Engineering),
 `driton@expenseflow.dev` (manager, Sales), `arta@expenseflow.dev` (employee).
