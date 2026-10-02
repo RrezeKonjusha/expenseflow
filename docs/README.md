@@ -28,4 +28,4 @@
 
 Re-render diagrams after editing: `java -jar plantuml.jar -tsvg -o rendered docs/diagrams/*.puml`
 Regenerate the API schema: `python manage.py spectacular --file ../docs/api/openapi.yml`
-Export everything to one PDF for submission: `pandoc docs/*.md -o ExpenseFlow-docs.pdf --toc`
+Build the single documentation PDF (title page, contents, page numbers, all diagrams): `scripts/build-docs.sh` -> `build/ExpenseFlow-documentation.pdf` (needs pandoc 3, Node and Chrome; attached to each GitHub Release, not committed)

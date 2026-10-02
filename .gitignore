@@ -21,3 +21,5 @@ results/
 /*.docx
 /expenseflow-component-diagram.png
 frontend/storybook-static/
+build/
+scripts/docs/node_modules/
