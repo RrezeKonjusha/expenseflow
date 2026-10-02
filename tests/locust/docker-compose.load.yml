@@ -1,0 +1,11 @@
+# Load-test target: the CI stack with the per-IP limits lifted, because every simulated user comes from one IP.
+#   docker compose -f docker-compose.yml -f docker-compose.ci.yml -f tests/locust/docker-compose.load.yml up -d --build
+# Cache-off baseline: DASHBOARD_CACHE_SECONDS=0 docker compose ... up -d
+services:
+  api:
+    environment:
+      THROTTLE_ANON: 100000/min
+      THROTTLE_AUTH: 100000/min
+      THROTTLE_USER: 100000/min
+      AXES_ENABLED: "0"
+      DASHBOARD_CACHE_SECONDS: ${DASHBOARD_CACHE_SECONDS:-300}
