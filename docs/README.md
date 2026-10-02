@@ -5,6 +5,7 @@
 | Design and implementation plan (living doc) | team design notes (see SRS and module docs) | all |
 | Phase I: definition, feasibility, requirements analysis, framework | `phase-1.md` | I |
 | Software Requirements Specification | `srs.md` | I |
+| Production readiness review: deploy checks, audits, fresh clone | `production-readiness.md` | IV |
 | Final report (all phases, performance, retrospective, hats) | `final-report.md` | final |
 | Demo video script, shot by shot | `demo/video-script.md` | final |
 | Defense study guide: pitch, likely questions, model answers | `defense-guide.md` | all |
