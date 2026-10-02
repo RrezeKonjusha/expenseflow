@@ -5,7 +5,6 @@
 name: expenseflow
 
 x-backend: &backend
-  build: ./backend
   image: ${REGISTRY:-expenseflow}/api:${IMAGE_TAG:-local}
   env_file: .env
   depends_on:
@@ -28,6 +27,7 @@ services:
 
   api:
     <<: *backend
+    build: ./backend  # the worker runs the same image, so only the api builds it
     environment:
       RUN_MIGRATIONS: "1"
       CELERY_TASK_ALWAYS_EAGER: "0"
@@ -86,7 +86,23 @@ services:
       - ./infra/grafana/provisioning:/etc/grafana/provisioning:ro
       - ./infra/grafana/dashboards:/var/lib/grafana/dashboards:ro
       - grafana_data:/var/lib/grafana
-    depends_on: [prometheus]
+    depends_on: [prometheus, loki]
+
+  # Centralised logs: Promtail reads every container's output, Loki stores it, Grafana queries it.
+  loki:
+    image: grafana/loki:3.5.5
+    command: ["-config.file=/etc/loki/loki.yml"]
+    volumes:
+      - ./infra/loki/loki.yml:/etc/loki/loki.yml:ro
+      - loki_data:/loki
+
+  promtail:
+    image: grafana/promtail:3.5.5
+    command: ["-config.file=/etc/promtail/promtail.yml"]
+    volumes:
+      - ./infra/promtail/promtail.yml:/etc/promtail/promtail.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on: [loki]
 
 volumes:
   pg_data:
@@ -94,5 +110,6 @@ volumes:
   redis_data:
   prom_data:
   grafana_data:
+  loki_data:
   caddy_data:
   caddy_config:
