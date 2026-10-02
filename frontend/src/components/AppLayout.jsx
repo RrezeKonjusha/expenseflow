@@ -109,6 +109,9 @@ export default function AppLayout() {
               <MenuIcon />
             </IconButton>
           )}
+          <Typography variant="h6" fontWeight={700} color="primary" noWrap>
+            ExpenseFlow
+          </Typography>
           <Box sx={{ flexGrow: 1 }} />
           <Chip
             size="small"
