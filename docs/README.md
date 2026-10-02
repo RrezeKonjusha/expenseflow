@@ -5,6 +5,8 @@
 | Design and implementation plan (living doc) | team design notes (see SRS and module docs) | all |
 | Phase I: definition, feasibility, requirements analysis, framework | `phase-1.md` | I |
 | Software Requirements Specification | `srs.md` | I |
+| Final report (all phases, performance, retrospective, hats) | `final-report.md` | final |
+| Demo video script, shot by shot | `demo/video-script.md` | final |
 | Defense study guide: pitch, likely questions, model answers | `defense-guide.md` | all |
 | Test report: results, load, security, defects | `test-report.md`, `test-results/` | III, IV |
 | Phase II design: architecture, data, API, UI | `design.md` | II |
