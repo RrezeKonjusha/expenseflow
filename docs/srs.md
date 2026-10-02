@@ -1,6 +1,6 @@
 # Software Requirements Specification: ExpenseFlow
 
-Version 1.0 · September 2026 · Team: M1-M5 (fill in names) · UBT Lab Course 2
+Version 1.1 · Rreze Konjusha (solo project, approved exception to the 5-person team rule) · UBT Lab Course 2, prof. ass. Dr. sc. Liridon Hoti
 
 ## 1. Introduction
 **Purpose.** ExpenseFlow lets employees claim work expenses, managers approve them and admins reimburse and report on them.
@@ -9,8 +9,12 @@ Version 1.0 · September 2026 · Team: M1-M5 (fill in names) · UBT Lab Course 2
 
 ## 2. Stakeholders and elicitation
 - Employees, department managers, finance/admin staff, the course professor (evaluator).
-- Elicitation: online questionnaire (`questionnaire.md`, N = __ responses) and analysis of the existing process (email + Excel).
-- Key findings: (fill in from responses, e.g. "68% lose track of claims sent by email").
+- Elicitation: online questionnaire (`questionnaire.md`, Google Forms) and analysis of the existing process (email + Excel).
+- Existing process: employees email scanned receipts or keep them in personal Excel sheets; finance copies them into a
+  master sheet; managers approve by replying to email. Nothing checks policy or budget before approval, and there is no
+  record of who approved what.
+- Questionnaire results: see `questionnaire.md`, section "Results" (filled in once the responses are collected), and the
+  requirements each finding confirms.
 
 ## 3. User roles
 | Role | Description |
@@ -51,7 +55,10 @@ Version 1.0 · September 2026 · Team: M1-M5 (fill in names) · UBT Lab Course 2
 | NFR-09 | Portability | Runs identically locally, in CI and on the server via Docker Compose |
 
 ## 6. Constraints and assumptions
-React, Django, PostgreSQL, MongoDB and Docker are mandated by the team; hosting on a single VPS; team of exactly 5.
+- Technologies: React (frontend), Django (backend), PostgreSQL (SQL) and MongoDB (NoSQL) satisfy the course's mandatory stack; Docker Compose for every environment.
+- Hosting on a single VPS; the CI Docker stack is the test and staging environment.
+- One developer (approved exception to the 5-person rule); the five roles are tracked as hats on GitHub issues.
+- Demo data only; no real payment or personal data.
 
 ## 7. Feasibility
-Technical: all components are mature open source with large communities. Economic: free tiers and student credit. Schedule: 7 two-week sprints, tracked as GitHub milestones on the project board.
+Technical, economic and schedule feasibility, risks and the project framework are analysed in `phase-1.md`. Summary: all components are mature open source and already integrated; hosting is covered by student credit; 7 two-week sprints are tracked as GitHub milestones.
