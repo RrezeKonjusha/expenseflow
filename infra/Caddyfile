@@ -4,6 +4,8 @@
 	encode zstd gzip
 
 	@backend path /api/* /django-admin/* /static/* /health/
+	# API answers are personal (tokens, expenses): no shared or browser cache keeps them, unless a view sets its own
+	header /api/* ?Cache-Control "no-store"
 	handle @backend {
 		reverse_proxy {
 			# every replica of `api` (docker compose --scale api=2) is discovered through Docker DNS
@@ -24,6 +26,12 @@
 	handle {
 		root * /srv
 		try_files {path} /index.html
+		# Vite file names carry a content hash, so assets never change; the app shell must always be revalidated,
+		# otherwise a browser keeps running the previous release after a deploy
+		@assets path /assets/*
+		header @assets Cache-Control "public, max-age=31536000, immutable"
+		@shell not path /assets/*
+		header @shell Cache-Control "no-cache"
 		file_server
 	}
 
@@ -33,6 +41,8 @@
 		X-Frame-Options "DENY"
 		Referrer-Policy "same-origin"
 		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		Cross-Origin-Opener-Policy "same-origin"
+		Cross-Origin-Resource-Policy "same-origin"
 		-Server
 	}
 
