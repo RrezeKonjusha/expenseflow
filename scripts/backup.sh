@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Nightly backup of PostgreSQL and MongoDB from a running ExpenseFlow stack.
-#   infra/backup/backup.sh                  # production defaults
-#   PROJECT=expenseflow BACKUP_DIR=./backups infra/backup/backup.sh
+#   scripts/backup.sh                  # production defaults
+#   PROJECT=expenseflow BACKUP_DIR=./backups scripts/backup.sh
 # Cron (as the deploy user, 02:00 daily):
-#   0 2 * * * cd ~/expenseflow-prod && infra/backup/backup.sh >> ~/backups/backup.log 2>&1
+#   0 2 * * * cd ~/expenseflow-prod && scripts/backup.sh >> ~/backups/backup.log 2>&1
 set -euo pipefail
 
 PROJECT=${PROJECT:-prod}
