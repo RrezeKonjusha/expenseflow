@@ -5,6 +5,7 @@
 | Design and implementation plan (living doc) | team design notes (see SRS and module docs) | all |
 | Phase I: definition, feasibility, requirements analysis, framework | `phase-1.md` | I |
 | Software Requirements Specification | `srs.md` | I |
+| Test report: results, load, security, defects | `test-report.md`, `test-results/` | III, IV |
 | Phase II design: architecture, data, API, UI | `design.md` | II |
 | Figma prototype spec and app screenshots | `figma-spec.md`, `design-screens/` | II |
 | Stakeholder questionnaire | `questionnaire.md` | I |
