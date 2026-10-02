@@ -5,6 +5,7 @@ from datetime import timedelta
 import pytest
 from django.utils import timezone
 from rest_framework.test import APIClient
+from rest_framework_simplejwt.tokens import AccessToken
 
 from tests.factories import PASSWORD, MealFactory, UserFactory
 
@@ -43,6 +44,23 @@ def test_tampered_token_is_401(world):
     token = c._credentials["HTTP_AUTHORIZATION"]
     c.credentials(HTTP_AUTHORIZATION=token[:-3] + "abc")
     assert c.get("/api/v1/expenses/").status_code == 401
+
+
+def test_expired_access_token_is_401(world):
+    token = AccessToken.for_user(world.arta)
+    token.set_exp(from_time=timezone.now() - timedelta(hours=1), lifetime=timedelta(minutes=15))
+    c = APIClient()
+    c.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+    assert c.get("/api/v1/expenses/").status_code == 401
+
+
+def test_cookie_alone_cannot_write(world):
+    """CSRF: the API trusts only the Authorization header, which a forged cross-site request cannot set."""
+    c = APIClient(enforce_csrf_checks=True)
+    login = c.post("/api/v1/auth/login/", {"email": world.arta.email, "password": PASSWORD}, format="json")
+    assert login.status_code == 200 and "ef_refresh" in login.cookies  # the browser now holds the refresh cookie
+    r = c.post("/api/v1/expenses/", {"type": "MEAL", "project": world.alpha.pk, "amount": "10"}, format="json")
+    assert r.status_code == 401
 
 
 def test_user_cannot_approve_own(world):

@@ -7,7 +7,7 @@ node "Browser" {
   [React SPA\n(Redux, Router, Axios, MUI)] as SPA
 }
 node "Caddy (API gateway)" as GW
-node "Django API (stateless, N replicas)" {
+node "Django API (stateless, N replicas)" as API {
   package "accounts\n(Authentication)" as ACC
   package "users\n(User management)" as USR
   package "expenses\n(Business operations)" as EXP
@@ -20,6 +20,7 @@ database "MongoDB\n(audit_logs, report_snapshots)" as MG
 database "Redis\n(cache, throttles, broker)" as RD
 cloud "SMTP\n(Mailpit / Brevo)" as SMTP
 node "Prometheus + Grafana" as MON
+node "Loki + Promtail\n(central logs)" as LOG
 
 U --> SPA
 SPA --> GW : HTTPS /api/v1 (JWT)
@@ -42,5 +43,7 @@ CORE --> RD : enqueue jobs / cache
 RD --> W
 W --> MG : audit writes
 W --> SMTP : emails
-MON ..> GW : scrapes /metrics
+MON ..> API : scrapes /metrics (every replica)
+LOG ..> API : collects container logs (api, worker, all)
+MON ..> LOG : Grafana queries logs
 @enduml
