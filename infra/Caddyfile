@@ -3,7 +3,7 @@
 {$SITE_DOMAIN:localhost} {
 	encode zstd gzip
 
-	@backend path /api/* /admin/* /static/* /health/
+	@backend path /api/* /django-admin/* /static/* /health/
 	handle @backend {
 		reverse_proxy {
 			# every replica of `api` (docker compose --scale api=2) is discovered through Docker DNS
@@ -37,6 +37,6 @@
 	}
 
 	# Swagger UI and Django admin use inline scripts, so they get no CSP; everything else is locked down.
-	@csp not path /api/docs* /admin/* /grafana/*
+	@csp not path /api/docs* /django-admin/* /grafana/*
 	header @csp Content-Security-Policy "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
 }
